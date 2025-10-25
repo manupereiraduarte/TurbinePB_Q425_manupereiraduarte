@@ -1,4 +1,4 @@
-# ⚙️ Program Specifications
+# Program Specifications
 
 ## 1. User Story
 

@@ -26,7 +26,7 @@ You need the **Solana Tool Suite**, **Anchor CLI**, and a recent version of **No
 
 3.  **Start the local Solana validator** in a separate terminal:
     ```bash
-    anchor localnet
+    solana-test-validator
     ```
 
 4.  Run the tests. Anchor will automatically deploy the program to the local validator before running the TypeScript tests:
@@ -34,4 +34,4 @@ You need the **Solana Tool Suite**, **Anchor CLI**, and a recent version of **No
     anchor test
     ```
 
-> **Troubleshooting:** If you receive a "port in use" error, stop the `anchor localnet` process (`Ctrl + C`) and try running `anchor test` again, as it sometimes needs to restart the validator itself.
+> **Troubleshooting:** If you receive a "port in use" error, stop the `solana-test-validator` process (`Ctrl + C`) and try running `anchor test` again, as it sometimes needs to restart the validator itself.
