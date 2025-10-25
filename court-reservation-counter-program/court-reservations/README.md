@@ -10,7 +10,7 @@ This project implements a basic counter program on the Solana blockchain using A
 
 ### Prerequisites
 
-You need the **Solana Tool Suite**, **Anchor CLI**, and a recent version of **Node.js** installed.
+You need the **Solana Tool Suite**, **Anchor CLI**, and a recent version of **Node.js** installed. (mucho package installed)
 
 ### Steps to Run and Test
 
