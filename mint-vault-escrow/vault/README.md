@@ -10,4 +10,4 @@ The below is an anchor vault for my custom Gaucho Token
 ---
 
 ### Screenshot
-![alt text](</docs/Captura de pantalla 2025-11-02 191132.png>)
+![alt text](<../docs/Captura de pantalla 2025-11-02 191132.png>)
