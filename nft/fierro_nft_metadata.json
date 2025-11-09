@@ -1,0 +1,24 @@
+{
+  "name": "Fierro NFT",
+  "symbol": "FIERRO",
+  "description": "El primer NFT creado y transferido en el proyecto Q4/25.",
+  "image": "https://tan-fascinating-crocodile-23.mypinata.cloud/ipfs/bafybeic2fyxg2fgv2josfrnfrcyievsojsas5byti7dkregh2dl567bns4",
+  "attributes": [
+    {
+      "trait_type": "Clase",
+      "value": "Core Asset"
+    },
+    {
+      "trait_type": "Status",
+      "value": "Transferido"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://tan-fascinating-crocodile-23.mypinata.cloud/ipfs/bafybeic2fyxg2fgv2josfrnfrcyievsojsas5byti7dkregh2dl567bns4",
+        "type": "image/png"
+      }
+    ]
+  }
+}
