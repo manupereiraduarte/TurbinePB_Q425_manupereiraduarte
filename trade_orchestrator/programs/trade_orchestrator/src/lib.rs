@@ -25,6 +25,10 @@ pub mod trade_orchestrator {
     ) -> Result<()> {
         instructions::notarize::notarize(ctx, hash)
     }
+
+    pub fn deposit_nft(ctx: Context<DepositNft>, operation_id: String) -> Result<()> {
+        instructions::deposit_nft::deposit_nft(ctx, operation_id)
+    }
     
 }
 
