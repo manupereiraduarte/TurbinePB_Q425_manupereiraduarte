@@ -29,6 +29,14 @@ pub mod trade_orchestrator {
     pub fn deposit_nft(ctx: Context<DepositNft>, operation_id: String) -> Result<()> {
         instructions::deposit_nft::deposit_nft(ctx, operation_id)
     }
+
+    pub fn deposit_payment(
+        ctx: Context<DepositPayment>,
+        operation_id: String,
+        amount: u64,
+    ) -> Result<()> {
+        instructions::deposit_payment::deposit_payment(ctx, operation_id, amount)
+    }
     
 }
 

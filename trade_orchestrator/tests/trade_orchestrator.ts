@@ -4,6 +4,7 @@ import { TradeOrchestrator } from "../target/types/trade_orchestrator";
 import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { token } from "@coral-xyz/anchor/dist/cjs/utils";
 
 describe("trade_orchestrator", () => {
   // Configure the client to use the local cluster.
@@ -22,6 +23,11 @@ describe("trade_orchestrator", () => {
   let nftMint: PublicKey;
   let exporterNftAccount: PublicKey;
   let vaultNftAccount: PublicKey;
+
+  // variables para el pago
+  let usdcMint: PublicKey;
+  let importerUsdcAccount: PublicKey;
+  let vaultPaymentAccount: PublicKey;
 
 
   it("Initializes a Trade operation", async () => {
@@ -153,4 +159,129 @@ describe("trade_orchestrator", () => {
 
     console.log("NFT deposited into vault correctly");
       })
+
+  it("Deposits Payment (USDC) into Vault!", async () => {
+    // creo token USDC
+    usdcMint = await createMint(
+      provider.connection,
+      provider.wallet.payer,
+      provider.wallet.publicKey,
+      null,
+      6
+    );
+
+    // creo cuenta del importador
+    const importerAta = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      provider.wallet.payer,
+      usdcMint,
+      importer.publicKey
+    );
+    importerUsdcAccount = importerAta.address;
+
+    // mintear
+
+    const amount = 1000 * 1_000_000; // 1000 USDC con 6 decimales
+    await mintTo(
+      provider.connection,
+      provider.wallet.payer,
+      usdcMint,
+      importerUsdcAccount,
+      provider.wallet.payer,
+      amount
+    );
+    
+    // calculo direccion de vault para payment
+    [vaultPaymentAccount] = await PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("vault_payment"),
+        Buffer.from(operationId)
+      ],
+      program.programId
+    );
+
+    const transferSolTx = new anchor.web3.Transaction().add(
+      anchor.web3.SystemProgram.transfer({
+        fromPubkey: provider.wallet.publicKey,
+        toPubkey: importer.publicKey,
+        lamports: 1 * anchor.web3.LAMPORTS_PER_SOL, // 1 SOL para fees
+      })
+    );
+    await provider.sendAndConfirm(transferSolTx);
+
+    // ejecuto instruccion de deposit payment
+    await program.methods
+      .depositPayment(operationId, new anchor.BN(amount)) // mando id y monto
+      .accounts({
+        operationAccount: operationPda,
+        importer: importer.publicKey,
+        tokenMint: usdcMint,
+        importerTokenAccount: importerUsdcAccount,
+        vaultAccount: vaultPaymentAccount,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      })
+      .signers([importer])
+      .rpc();
+
+    // verifico que el USDC este en la vault
+    const vaultBalance = await provider.connection.getTokenAccountBalance(vaultPaymentAccount);
+    // debe haber mil
+    assert.equal(vaultBalance.value.amount, amount.toString());
+    // verifico estado on chain
+    const account = await program.account.operationState.fetch(operationPda);
+    assert.equal(account.state, 2); // 2 = payment deposited
+
+    console.log("Payment deposited into vault correctly");
+
   });
+
+  it("Executes Atomic Swap!", async () => {
+    const exporterUsdcAta = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      provider.wallet.payer,
+      usdcMint,
+      provider.wallet.publicKey
+    );
+    const exporterUsdcAccount = exporterUsdcAta.address;
+
+    const importerNftAta = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      provider.wallet.payer,
+      nftMint,
+      importer.publicKey
+    );
+    const importerNftAccount = importerNftAta.address;
+
+    // ejecuto instruccion de swap
+    await program.methods
+      .executeSwap(operationId)
+      .accounts({
+        operationAccount: operationPda,
+        // quienes reciben
+        exporter: provider.wallet.publicKey,
+        importer: importer.publicKey,
+        // donde reciben los activos
+        exporterTokenAccount: exporterUsdcAccount,
+        importerTokenAccount: importerNftAccount,
+        // vaults de donde salen los activos
+        vaultNftAccount: vaultNftAccount,
+        vaultPaymentAccount: vaultPaymentAccount,
+        // programas
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc();
+
+      // verificacion
+      const exporterUsdcBalance = await provider.connection.getTokenAccountBalance(exporterUsdcAccount);
+      const importernftBalance = await provider.connection.getTokenAccountBalance(importerNftAccount);
+      const account = await program.account.operationState.fetch(operationPda);
+
+      assert.equal(exporterUsdcBalance.value.amount, (1000 * 1_000_000).toString()); // exporter recibe 1000 USDC
+      assert.equal(importernftBalance.value.uiAmount, 1); // importer recibe 1 NFT
+      assert.equal(account.state, 3); // 3 = completed
+
+      console.log("Atomic swap executed correctly");
+  });
+});
