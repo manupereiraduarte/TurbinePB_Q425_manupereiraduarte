@@ -44,6 +44,13 @@ pub mod trade_orchestrator {
     ) -> Result<()> {
         instructions::execute_swap::execute_swap(ctx, operation_id)
     }
+
+    pub fn cancel_operation(
+        ctx: Context<CancelOperation>, 
+        operation_id: String
+    ) -> Result<()> {
+        instructions::cancel::cancel_swap(ctx, operation_id)
+    }
     
 }
 

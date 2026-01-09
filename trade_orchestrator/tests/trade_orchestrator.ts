@@ -4,7 +4,7 @@ import { TradeOrchestrator } from "../target/types/trade_orchestrator";
 import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { token } from "@coral-xyz/anchor/dist/cjs/utils";
+import { publicKey, token } from "@coral-xyz/anchor/dist/cjs/utils";
 
 describe("trade_orchestrator", () => {
   // Configure the client to use the local cluster.
@@ -303,5 +303,130 @@ describe("trade_orchestrator", () => {
       console.log("Atomic swap executed correctly");
       console.log(`✅ Fee: ${feeAmount / 1_000_000} USDC`);
       console.log(`✅ Net: ${netAmount / 1_000_000} USDC`);
+  });
+
+  it("Cancels Operation and Refunds Assets!", async () => {
+    // el test anterior cierra y completa operacion, asique creamos una nueva.
+    const cancelOpId = "OP-CANCEL-TEST";
+
+    const [cancelOpPda] = await PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("operation"),
+        provider.wallet.publicKey.toBuffer(),
+        Buffer.from(cancelOpId),
+      ],
+      program.programId
+    );
+    // calculo pdas de nuevas bovedas
+    const [cancelVaultNft] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("vault_nft"),
+        Buffer.from(cancelOpId)
+      ],
+      program.programId
+    );
+    const [cancelVaultPayment] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("vault_payment"),
+        Buffer.from(cancelOpId)
+      ],
+      program.programId
+    );
+
+    // inicializo nueva operacion
+    await program.methods
+      .initialize(cancelOpId, importer.publicKey)
+      .accounts({
+        operationAccount: cancelOpPda,
+        signer: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+      // deposito nft, asumimos que exporter tiene tokens del mint anterior. minteo 1 para asegurar.
+      await mintTo(
+        provider.connection,
+        provider.wallet.payer,
+        nftMint,
+        exporterNftAccount,
+        provider.wallet.payer,
+        1
+      );
+
+      await program.methods
+      .depositNft(cancelOpId)
+      .accounts({
+        operationAccount: cancelOpPda,
+        exporter: provider.wallet.publicKey,
+        nftMint: nftMint,
+        exporterTokenAccount: exporterNftAccount,
+        vaultAccount: cancelVaultNft,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      })
+      .rpc();
+      
+      // deposito pago, 500 usdc
+      const refundAmount = 500 * 1_000_000;
+      await mintTo(
+        provider.connection,
+        provider.wallet.payer,
+        usdcMint,
+        importerUsdcAccount,
+        provider.wallet.payer,
+        refundAmount
+      );
+
+      await program.methods
+      .depositPayment(cancelOpId, new anchor.BN(refundAmount))
+      .accounts({
+        operationAccount: cancelOpPda,
+        importer: importer.publicKey,
+        tokenMint: usdcMint,
+        importerTokenAccount: importerUsdcAccount,
+        vaultAccount: cancelVaultPayment,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      })
+      .signers([importer])
+      .rpc();
+
+      // cancelacion
+      const preRefundExporterNft = (await provider.connection.getTokenAccountBalance(exporterNftAccount)).value.uiAmount;
+      const preRefundImporterUsdc = (await provider.connection.getTokenAccountBalance(importerUsdcAccount)).value.amount;
+
+      console.log("Cancelling operation and refunding assets...");
+      await program.methods
+      .cancelOperation(cancelOpId)
+      .accounts({
+        operationAccount: cancelOpPda,
+        exporter: provider.wallet.publicKey,
+        importer: importer.publicKey,
+        // vuelven a los owners 
+        exporterTokenAccount: exporterNftAccount,
+        importerTokenAccount: importerUsdcAccount,
+        // origenes
+        vaultNftAccount: cancelVaultNft,
+        vaultPaymentAccount: cancelVaultPayment,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc();
+
+      // validaciones
+      const postRefundExporterNft = (await provider.connection.getTokenAccountBalance(exporterNftAccount)).value.uiAmount;
+      const postRefundImporterUsdc = (await provider.connection.getTokenAccountBalance(importerUsdcAccount)).value.amount;
+      const opAccount = await program.account.operationState.fetch(cancelOpPda);
+
+      // exporter debe tener 1 NFT mas
+      assert.equal(postRefundExporterNft, preRefundExporterNft + 1);
+      // importer recupera 500, pasamos a bn para comparar montos grandes
+      const expectedUsdc = new anchor.BN(preRefundImporterUsdc).add(new anchor.BN(refundAmount)); 
+      assert.equal(postRefundImporterUsdc, expectedUsdc.toString());
+      // operacion queda cancelada
+      assert.equal(opAccount.state, 4); // 4 = cancelled
+
+      console.log("Operation cancelled and assets refunded correctly");
   });
 });
