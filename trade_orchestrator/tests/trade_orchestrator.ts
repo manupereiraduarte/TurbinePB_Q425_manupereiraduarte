@@ -254,6 +254,16 @@ describe("trade_orchestrator", () => {
     );
     const importerNftAccount = importerNftAta.address;
 
+    // billetera de fee, usamos keypair nueva para simular ser admin
+    const treasurykeypair = anchor.web3.Keypair.generate();
+    const treasuryUsdcAta = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      provider.wallet.payer,
+      usdcMint,
+      treasurykeypair.publicKey
+    );
+    const treasuryUsdcAccount = treasuryUsdcAta.address;
+
     // ejecuto instruccion de swap
     await program.methods
       .executeSwap(operationId)
@@ -265,6 +275,7 @@ describe("trade_orchestrator", () => {
         // donde reciben los activos
         exporterTokenAccount: exporterUsdcAccount,
         importerTokenAccount: importerNftAccount,
+        adminTreasuryTokenAccount: treasuryUsdcAccount,
         // vaults de donde salen los activos
         vaultNftAccount: vaultNftAccount,
         vaultPaymentAccount: vaultPaymentAccount,
@@ -276,12 +287,21 @@ describe("trade_orchestrator", () => {
       // verificacion
       const exporterUsdcBalance = await provider.connection.getTokenAccountBalance(exporterUsdcAccount);
       const importernftBalance = await provider.connection.getTokenAccountBalance(importerNftAccount);
+      const treasuryUsdcBalance = await provider.connection.getTokenAccountBalance(treasuryUsdcAccount);
       const account = await program.account.operationState.fetch(operationPda);
 
-      assert.equal(exporterUsdcBalance.value.amount, (1000 * 1_000_000).toString()); // exporter recibe 1000 USDC
+      // calculos esperados
+      const totalAmount = 1000 * 1_000_000;
+      const feeAmount = totalAmount * 1 / 100; // 1% fee
+      const netAmount = totalAmount - feeAmount;
+
+      assert.equal(exporterUsdcBalance.value.amount, netAmount.toString()); // exporter recibe 1000 USDC menos fee
+      assert.equal(treasuryUsdcBalance.value.amount, feeAmount.toString()); // treasury recibe 1% fee
       assert.equal(importernftBalance.value.uiAmount, 1); // importer recibe 1 NFT
       assert.equal(account.state, 3); // 3 = completed
 
       console.log("Atomic swap executed correctly");
+      console.log(`✅ Fee: ${feeAmount / 1_000_000} USDC`);
+      console.log(`✅ Net: ${netAmount / 1_000_000} USDC`);
   });
 });

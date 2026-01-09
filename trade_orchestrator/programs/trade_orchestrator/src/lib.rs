@@ -37,6 +37,13 @@ pub mod trade_orchestrator {
     ) -> Result<()> {
         instructions::deposit_payment::deposit_payment(ctx, operation_id, amount)
     }
+
+    pub fn execute_swap(
+        ctx: Context<ExecuteSwap>, 
+        operation_id: String
+    ) -> Result<()> {
+        instructions::execute_swap::execute_swap(ctx, operation_id)
+    }
     
 }
 
