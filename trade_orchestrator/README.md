@@ -44,56 +44,57 @@ I will implement a **Hybrid Architecture** that combines the speed of Web2 with 
 ## User Stories (MVP Scope)
 
 ### 1. Initialize Trade Operation
-> "As an Exporter, I want to initialize a new trade operation on the blockchain using a unique ID, so that I can create a secure, immutable space to store documents and payment states for a specific shipment."
+> "As an Exporter, I want to initialize a new trade operation defining the Importer and **a validity period (Time-Lock)**, so that the deal has a clear expiration date and my assets don't get locked indefinitely."
 
 **Acceptance Criteria:**
-* The program must derive a PDA (Program Derived Address) using the `operation_id` and the creator's Pubkey as seeds.
-* The initialized account must store the Exporter and Importer public keys.
-* The initial state of the operation account must be set to `Created`.
+* The program must derive a PDA using the `operation_id` and the creator's Pubkey.
+* The instruction must accept a `duration` (in seconds) to calculate and store the `expiry_time` (Unix Timestamp).
+* The initial state must be set to `Created`.
 * The transaction must fail if an operation with the same ID already exists.
 
 ### 2. Notarize Document
-> "As a Broker or Exporter, I want to upload the cryptographic hash (SHA-256) of a critical document (e.g., Invoice) to the operation account, So that all parties can mathematically verify that the document hasn't been altered off-chain."
+> "As a Broker or Exporter, I want to upload the cryptographic hash (SHA-256) of a critical document (e.g., Invoice) to the operation account, so that all parties can mathematically verify that the document hasn't been altered off-chain."
 
 **Acceptance Criteria:**
-* The instruction must accept a `32-byte` array (the SHA-256 hash) as an argument.
-* The program must append this hash to a vector list stored within the Operation Account.
-* Only the authorized Signer (defined in the account structure) can execute this instruction.
-* The program should emit an event confirming the document was registered.
+* The instruction must accept a `32-byte` array (SHA-256) as an argument.
+* The program must append this hash to the vector list in the Operation Account.
+* Only the authorized Exporter can execute this instruction.
+* The program should emit an event (or log) confirming registration.
 
 ### 3. Mint & Lock Bill of Lading (NFT)
 > "As an Exporter, I want to mint an NFT representing the 'Bill of Lading' and deposit it into the program's vault, so that the title of ownership is digitized and secured within the smart contract."
 
 **Acceptance Criteria:**
-* The program must accept an SPL Token (NFT) transfer from the Exporter to a Program Owned Account (Vault).
-* The program must verify that the token represents the correct asset for this operation.
-* The operation state must update to `AssetLocked` (or `NftDeposited`).
-* The Exporter must lose control of the NFT until the swap or a cancellation occurs.
+* The program must verify the Token Account is associated with the operation's specific Mint.
+* The NFT must be transferred from the Exporter to a Program Owned Account (Vault).
+* The operation state must update to `AssetLocked`.
 
 ### 4. Deposit Payment (Escrow Funding)
-> "As an importer, I want to deposit the agreed amount of SPL Tokens (e.g., USDC) into the program's escrow vault, so that I can prove my solvency and commitment to the deal without releasing funds directly to the seller yet."
+> "As an Importer, I want to deposit the agreed amount of SPL Tokens (USDC) into the program's escrow vault, so that I can prove my solvency without releasing funds directly to the seller yet."
 
 **Acceptance Criteria:**
-* The instruction must perform a CPI (Cross-Program Invocation) to the Token Program to transfer funds from the Importer to the Vault.
-* The program must verify that the deposited amount matches the `agreed_amount` defined in the operation.
-* The operation state must update to `PaymentDeposited` (or `FullyFunded` if the NFT is also there).
+* The instruction must perform a CPI to transfer funds from the Importer to the Payment Vault.
+* The operation state must update to `PaymentDeposited`.
+* The Importer must provide SOL to cover the rent of the new Vault account if it doesn't exist.
 
-### 5. Execute Atomic Settlement
-> "As an Exporter (or System Admin), I want to execute the trade settlement once all conditions (documents approved) are met, so that I receive the payment instantly while the Importer simultaneously receives the Bill of Lading NFT in a single transaction."
-
-**Acceptance Criteria:**
-* The instruction must verify that the required document hashes exist in the account state.
-* The instruction must perform two atomic transfers via CPI:
-    * **NFT:** From Vault to Importer.
-    * **Funds:** From Vault to Exporter.
-* The operation state must update to `Completed`.
-* The account should either close or lock permanently to prevent re-execution.
-
-### 6. Cancel and Refund
-> "As an Exporter or Importer, I want to cancel the operation if the deal falls through before the final swap, so that both parties can recover their deposited assets (NFT and Funds)."
+### 5. Execute Atomic Settlement (with Fees)
+> "As an Exporter or Importer, I want to execute the trade settlement once all conditions are met **and before the operation expires**, so that the payment and ownership transfer happen atomically with a protocol fee deduction."
 
 **Acceptance Criteria:**
-* Both parties must sign (multisig) OR a timeout period must pass to execute this instruction.
-* The program must return the NFT to the Exporter.
-* The program must return the Funds to the Importer.
-* The operation account closes.
+* **Time-Lock Check:** The instruction must fail if the current block time > `expiry_time`.
+* **Protocol Fee:** The program must calculate **1%** of the total payment and transfer it to the `Admin Treasury`.
+* **Net Settlement:** The remaining **99%** of funds must be transferred to the Exporter.
+* **Asset Transfer:** The NFT must be transferred to the Importer.
+* The operation state must update to `Swapped`.
+
+### 6. Cancel and Refund (Trustless)
+> "As a participant, I want to cancel the operation if the deal fails. The Exporter can cancel anytime, but the Importer can only cancel **if the time-lock has expired**, ensuring funds are never held hostage."
+
+**Acceptance Criteria:**
+* **Permissions Logic:**
+    * The **Exporter** can call this instruction at any time (before Swap).
+    * The **Importer** (or any other signer) can ONLY call this if `current_time > expiry_time`.
+* **Refunds:**
+    * If the NFT Vault has balance -> Refund NFT to Exporter.
+    * If the Payment Vault has balance -> Refund USDC to Importer.
+* The operation state must update to `Cancelled`.
