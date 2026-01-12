@@ -15,8 +15,9 @@ pub mod trade_orchestrator {
         ctx: Context<Initialize>,
         operation_id: String,
         importer: Pubkey,
+        duration_seconds: i64,
     ) -> Result<()> {
-        instructions::initialize::initialize(ctx, operation_id, importer)
+        instructions::initialize::initialize(ctx, operation_id, importer, duration_seconds)
     }
 
     pub fn notarize_document(
@@ -52,5 +53,14 @@ pub mod trade_orchestrator {
         instructions::cancel::cancel_swap(ctx, operation_id)
     }
     
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Operation expired.")]
+    OperationExpired,
+
+    #[msg("Operation not expired.")]
+    OperationNotExpired,
 }
 

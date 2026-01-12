@@ -8,4 +8,5 @@ pub struct OperationState {
     pub state: u8, // 0: initialized, 1: in transit, 2: delivered
     pub bump: u8,
     pub documents: Vec<[u8; 32]>, // lista de hashes de documentos
+    pub expiry_time: i64,
 }

@@ -51,6 +51,13 @@ pub struct ExecuteSwap<'info> {
 }
 
 pub fn execute_swap(ctx: Context<ExecuteSwap>, operation_id: String) -> Result<()> {
+    // verifico expiracion
+    let clock = Clock::get()?;
+    let operation_account = &ctx.accounts.operation_account;
+    if clock.unix_timestamp > operation_account.expiry_time {
+        return err!(crate::ErrorCode::OperationExpired);
+    }
+    
     // preparo las semillas para firmar, signed cpi
     let operation_id_bytes = operation_id.as_bytes();
     let exporter_key = ctx.accounts.exporter.key();

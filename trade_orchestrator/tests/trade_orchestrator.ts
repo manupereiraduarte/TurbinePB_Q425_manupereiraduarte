@@ -45,9 +45,11 @@ describe("trade_orchestrator", () => {
       program.programId
     );
     console.log("PDA esperada: ", operationPda.toBase58());
+
+    const duration = new anchor.BN(86400); 
     // ejecuto instruccion
     await program.methods
-      .initialize(operationId, importer.publicKey)
+      .initialize(operationId, importer.publicKey, duration)
       .accounts({
         operationAccount: operationPda,
         signer: provider.wallet.publicKey,
@@ -333,9 +335,11 @@ describe("trade_orchestrator", () => {
       program.programId
     );
 
+    const duration = new anchor.BN(86400);
+
     // inicializo nueva operacion
     await program.methods
-      .initialize(cancelOpId, importer.publicKey)
+      .initialize(cancelOpId, importer.publicKey, duration)
       .accounts({
         operationAccount: cancelOpPda,
         signer: provider.wallet.publicKey,

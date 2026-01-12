@@ -17,6 +17,9 @@ pub struct CancelOperation<'info> {
     pub operation_account: Box<Account<'info, OperationState>>,
 
     #[account(mut)]
+    pub signer: Signer<'info>,
+
+     /// CHECK: Solo usamos la dirección (key) para validar las seeds del PDA. No leemos ni escribimos datos en esta cuenta.
     pub exporter: Signer<'info>, // El Exportador inicia la cancelación
 
     /// CHECK: Dirección necesaria para devolverle los fondos
@@ -51,6 +54,18 @@ pub struct CancelOperation<'info> {
 }
 
 pub fn cancel_swap(ctx: Context<CancelOperation>, operation_id: String) -> Result<()> {
+    let operation_account = &ctx.accounts.operation_account;
+    let clock = Clock::get()?;
+    let current_time = clock.unix_timestamp;
+
+    // verifico quien quiere cancelar
+    let is_exporter = ctx.accounts.signer.key() == operation_account.exporter;
+    let is_expired = current_time > operation_account.expiry_time;
+
+    if !is_exporter && !is_expired {
+        return err!(crate::ErrorCode::OperationNotExpired);
+    }
+    
     // Preparar semillas para firmar la devolución
     let operation_id_bytes = operation_id.as_bytes();
     let exporter_key = ctx.accounts.exporter.key();
