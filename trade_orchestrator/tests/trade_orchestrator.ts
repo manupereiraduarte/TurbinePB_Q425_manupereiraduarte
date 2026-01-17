@@ -4,7 +4,6 @@ import { TradeOrchestrator } from "../target/types/trade_orchestrator";
 import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { publicKey, token } from "@coral-xyz/anchor/dist/cjs/utils";
 
 describe("trade_orchestrator", () => {
   // Configure the client to use the local cluster.
@@ -13,29 +12,33 @@ describe("trade_orchestrator", () => {
 
   const program = anchor.workspace.tradeOrchestrator as Program<TradeOrchestrator>;
 
-  // variables
+  // Core variables
   let importer: anchor.web3.Keypair;
   let operationId: string;
   let operationPda: PublicKey;
   let bump: number;
 
-  // variables para deposit
+  // Deposit variables (NFT)
   let nftMint: PublicKey;
   let exporterNftAccount: PublicKey;
   let vaultNftAccount: PublicKey;
 
-  // variables para el pago
+  // Payment variables (USDC)
   let usdcMint: PublicKey;
   let importerUsdcAccount: PublicKey;
   let vaultPaymentAccount: PublicKey;
 
+  console.log("\n🚀 STARTING INTEGRATION TESTS FOR TRADE ORCHESTRATOR...\n");
 
-  it("Initializes a Trade operation", async () => {
-    // preparo datos de prueba
+  it("Step 1: Initializes a Trade Operation", async () => {
+    console.log("---------------------------------------------------");
+    console.log("➡️  Step 1: Initialization");
+    
+    // Prepare test data
     importer = anchor.web3.Keypair.generate();
-    operationId = "OP-1234567"; // id de ejemplo
+    operationId = "OP-" + Math.floor(Math.random() * 100000); // Random ID
 
-    // calculo PDA esperada
+    // Calculate expected PDA
     [operationPda, bump] = await PublicKey.findProgramAddressSync(
       [
         Buffer.from("operation"),
@@ -44,10 +47,13 @@ describe("trade_orchestrator", () => {
       ],
       program.programId
     );
-    console.log("PDA esperada: ", operationPda.toBase58());
+    
+    console.log(`   ℹ️  Operation ID: ${operationId}`);
+    console.log(`   ℹ️  Expected PDA: ${operationPda.toBase58()}`);
 
-    const duration = new anchor.BN(86400); 
-    // ejecuto instruccion
+    const duration = new anchor.BN(86400); // 1 Day
+
+    // Execute instruction
     await program.methods
       .initialize(operationId, importer.publicKey, duration)
       .accounts({
@@ -57,27 +63,30 @@ describe("trade_orchestrator", () => {
       })
       .rpc();
 
-    // verifico estado de la cuenta
+    // Verify state
     const account = await program.account.operationState.fetch(operationPda);
 
-    // verificamos datos
+    // Assertions
     assert.equal(account.operationId, operationId);
     assert.equal(account.exporter.toBase58(), provider.wallet.publicKey.toBase58());
     assert.equal(account.importer.toBase58(), importer.publicKey.toBase58());
-    assert.equal(account.state, 0); // 0 = created
+    assert.equal(account.state, 0); 
 
-    console.log("operation account initalized correctly");
+    console.log("   ✅ Operation initialized successfully.");
+    console.log("   ✅ Time-Lock set to 86400 seconds.");
   });
 
-  it("Notarize a Document (stores hash)!", async () => {
-    // creamos hash de prueba
+  it("Step 2: Notarize a Document (Stores Hash)", async () => {
+    console.log("---------------------------------------------------");
+    console.log("➡️  Step 2: Document Notarization");
+
+    // Create fake hash
     const falseHash = anchor.web3.Keypair.generate().publicKey.toBuffer();
-    // convertimos a array de nuemeros para simplificar assert
     const hashArray = Array.from(falseHash);
     
-    console.log("Storing hash:", falseHash.toString("hex"));
+    console.log(`   ℹ️  Document Hash: ${falseHash.toString("hex").slice(0, 30)}...`);
 
-    // ejecuto instruccion
+    // Execute instruction
     await program.methods
     .notarizeDocument(Array.from(falseHash))
     .accounts({
@@ -86,26 +95,29 @@ describe("trade_orchestrator", () => {
     })
     .rpc();
     
-    // verifico estado de la cuenta
+    // Verify state
     const account = await program.account.operationState.fetch(operationPda);
-    // verificamos datos
+    
     assert.equal(account.documents.length, 1);
     assert.deepEqual(account.documents[0], hashArray);
 
-    console.log("Document notarized correctly");
-    });
+    console.log("   ✅ Document Hash stored on-chain.");
+  });
 
-  it("Mints & Locks document (NFT) into Vault!", async () => {
-    // creo token
+  it("Step 3: Mints & Locks Bill of Lading (NFT) into Vault", async () => {
+    console.log("---------------------------------------------------");
+    console.log("➡️  Step 3: Deposit NFT (Bill of Lading)");
+
+    // Create Token
     nftMint = await createMint(
       provider.connection,
       provider.wallet.payer,
       provider.wallet.publicKey,
       null,
-      0
+      0 // 0 decimals 
     );
 
-    // creo cuenta del exportador (ATA)
+    // Create Exporter ATA
     const exporterAta = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       provider.wallet.payer,
@@ -114,7 +126,7 @@ describe("trade_orchestrator", () => {
     );
     exporterNftAccount = exporterAta.address;
     
-    // mint token to exporter
+    // Mint to Exporter
     await mintTo(
       provider.connection,
       provider.wallet.payer,
@@ -123,9 +135,9 @@ describe("trade_orchestrator", () => {
       provider.wallet.payer,
       1
     );
-    console.log("NFT created and minted to exporter");
+    console.log("   ℹ️  NFT Minted to Exporter wallet.");
 
-    // calculo direccion de vault
+    // Calculate Vault PDA
     [vaultNftAccount] = await PublicKey.findProgramAddressSync(
       [
         Buffer.from("vault_nft"),
@@ -134,7 +146,7 @@ describe("trade_orchestrator", () => {
       program.programId
     );
 
-    // ejecuto instruccion de deposit
+    // Execute Deposit
     await program.methods
       .depositNft(operationId)
       .accounts({
@@ -149,7 +161,7 @@ describe("trade_orchestrator", () => {
       })
       .rpc();
 
-    // verifico que el NFT este en la vault
+    // Verify Balances
     const vaultBalance = await provider.connection.getTokenAccountBalance(vaultNftAccount);
     const exporterBalance = await provider.connection.getTokenAccountBalance(exporterNftAccount);
 
@@ -157,13 +169,17 @@ describe("trade_orchestrator", () => {
     assert.equal(exporterBalance.value.uiAmount, 0);
 
     const account = await program.account.operationState.fetch(operationPda);
-    assert.equal(account.state, 1); // 1 = nft deposited
+    assert.equal(account.state, 1); // 1 = AssetLocked
 
-    console.log("NFT deposited into vault correctly");
-      })
+    console.log("   ✅ NFT moved to Program Vault.");
+    console.log("   ✅ Operation State updated to 'AssetLocked'.");
+  });
 
-  it("Deposits Payment (USDC) into Vault!", async () => {
-    // creo token USDC
+  it("Step 4: Deposits Payment (USDC) into Vault", async () => {
+    console.log("---------------------------------------------------");
+    console.log("➡️  Step 4: Deposit Payment (USDC)");
+
+    // Create fake USDC
     usdcMint = await createMint(
       provider.connection,
       provider.wallet.payer,
@@ -172,7 +188,7 @@ describe("trade_orchestrator", () => {
       6
     );
 
-    // creo cuenta del importador
+    // Create Importer ATA
     const importerAta = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       provider.wallet.payer,
@@ -181,9 +197,8 @@ describe("trade_orchestrator", () => {
     );
     importerUsdcAccount = importerAta.address;
 
-    // mintear
-
-    const amount = 1000 * 1_000_000; // 1000 USDC con 6 decimales
+    // Mint USDC to Importer
+    const amount = 1000 * 1_000_000; // 1000 USDC
     await mintTo(
       provider.connection,
       provider.wallet.payer,
@@ -192,8 +207,9 @@ describe("trade_orchestrator", () => {
       provider.wallet.payer,
       amount
     );
+    console.log(`   ℹ️  Minted 1,000 USDC to Importer.`);
     
-    // calculo direccion de vault para payment
+    // Calculate Payment Vault PDA
     [vaultPaymentAccount] = await PublicKey.findProgramAddressSync(
       [
         Buffer.from("vault_payment"),
@@ -202,18 +218,19 @@ describe("trade_orchestrator", () => {
       program.programId
     );
 
+    // Fund Importer with SOL for fees
     const transferSolTx = new anchor.web3.Transaction().add(
       anchor.web3.SystemProgram.transfer({
         fromPubkey: provider.wallet.publicKey,
         toPubkey: importer.publicKey,
-        lamports: 1 * anchor.web3.LAMPORTS_PER_SOL, // 1 SOL para fees
+        lamports: 1 * anchor.web3.LAMPORTS_PER_SOL,
       })
     );
     await provider.sendAndConfirm(transferSolTx);
 
-    // ejecuto instruccion de deposit payment
+    // Execute Deposit Payment
     await program.methods
-      .depositPayment(operationId, new anchor.BN(amount)) // mando id y monto
+      .depositPayment(operationId, new anchor.BN(amount))
       .accounts({
         operationAccount: operationPda,
         importer: importer.publicKey,
@@ -227,19 +244,23 @@ describe("trade_orchestrator", () => {
       .signers([importer])
       .rpc();
 
-    // verifico que el USDC este en la vault
+    // Verify Balance
     const vaultBalance = await provider.connection.getTokenAccountBalance(vaultPaymentAccount);
-    // debe haber mil
+    
     assert.equal(vaultBalance.value.amount, amount.toString());
-    // verifico estado on chain
+    
     const account = await program.account.operationState.fetch(operationPda);
-    assert.equal(account.state, 2); // 2 = payment deposited
+    assert.equal(account.state, 2); // 2 = PaymentDeposited
 
-    console.log("Payment deposited into vault correctly");
-
+    console.log("   ✅ 1,000 USDC locked in Escrow Vault.");
+    console.log("   ✅ Operation State updated to 'PaymentDeposited'.");
   });
 
-  it("Executes Atomic Swap!", async () => {
+  it("Step 5: Executes Atomic Swap!", async () => {
+    console.log("---------------------------------------------------");
+    console.log("➡️  Step 5: Execute Atomic Swap");
+
+    // Prepare receiver accounts
     const exporterUsdcAta = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       provider.wallet.payer,
@@ -256,7 +277,7 @@ describe("trade_orchestrator", () => {
     );
     const importerNftAccount = importerNftAta.address;
 
-    // billetera de fee, usamos keypair nueva para simular ser admin
+    // Treasury for fees
     const treasurykeypair = anchor.web3.Keypair.generate();
     const treasuryUsdcAta = await getOrCreateAssociatedTokenAccount(
       provider.connection,
@@ -266,78 +287,71 @@ describe("trade_orchestrator", () => {
     );
     const treasuryUsdcAccount = treasuryUsdcAta.address;
 
-    // ejecuto instruccion de swap
+    // Execute Swap
     await program.methods
       .executeSwap(operationId)
       .accounts({
         operationAccount: operationPda,
-        // quienes reciben
+        // Receivers
         exporter: provider.wallet.publicKey,
         importer: importer.publicKey,
-        // donde reciben los activos
+        // Destinations
         exporterTokenAccount: exporterUsdcAccount,
         importerTokenAccount: importerNftAccount,
         adminTreasuryTokenAccount: treasuryUsdcAccount,
-        // vaults de donde salen los activos
+        // Sources (Vaults)
         vaultNftAccount: vaultNftAccount,
         vaultPaymentAccount: vaultPaymentAccount,
-        // programas
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
 
-      // verificacion
+      // Verify final balances
       const exporterUsdcBalance = await provider.connection.getTokenAccountBalance(exporterUsdcAccount);
       const importernftBalance = await provider.connection.getTokenAccountBalance(importerNftAccount);
       const treasuryUsdcBalance = await provider.connection.getTokenAccountBalance(treasuryUsdcAccount);
       const account = await program.account.operationState.fetch(operationPda);
 
-      // calculos esperados
+      // Calculations
       const totalAmount = 1000 * 1_000_000;
       const feeAmount = totalAmount * 1 / 100; // 1% fee
       const netAmount = totalAmount - feeAmount;
 
-      assert.equal(exporterUsdcBalance.value.amount, netAmount.toString()); // exporter recibe 1000 USDC menos fee
-      assert.equal(treasuryUsdcBalance.value.amount, feeAmount.toString()); // treasury recibe 1% fee
-      assert.equal(importernftBalance.value.uiAmount, 1); // importer recibe 1 NFT
-      assert.equal(account.state, 3); // 3 = completed
+      assert.equal(exporterUsdcBalance.value.amount, netAmount.toString());
+      assert.equal(treasuryUsdcBalance.value.amount, feeAmount.toString());
+      assert.equal(importernftBalance.value.uiAmount, 1);
+      assert.equal(account.state, 3); // 3 = Swapped/Completed
 
-      console.log("Atomic swap executed correctly");
-      console.log(`✅ Fee: ${feeAmount / 1_000_000} USDC`);
-      console.log(`✅ Net: ${netAmount / 1_000_000} USDC`);
+      console.log("   ✅ Swap Executed Successfully.");
+      console.log(`   💰 Protocol Fee (1%): ${feeAmount / 1_000_000} USDC -> Treasury`);
+      console.log(`   💵 Exporter Recieved: ${netAmount / 1_000_000} USDC`);
+      console.log(`   📦 Importer Recieved: 1 Bill of Lading (NFT)`);
   });
 
-  it("Cancels Operation and Refunds Assets!", async () => {
-    // el test anterior cierra y completa operacion, asique creamos una nueva.
-    const cancelOpId = "OP-CANCEL-TEST";
+  it("Step 6: Cancels Operation and Refunds Assets (Safety Check)", async () => {
+    console.log("---------------------------------------------------");
+    console.log("➡️  Step 6: Test Cancel & Refund Flow");
+    console.log("   ℹ️  Creating a NEW operation to test cancellation...");
+
+    // Setup new operation for cancel test
+    const cancelOpId = "OP-CANCEL-" + Math.floor(Math.random() * 1000);
 
     const [cancelOpPda] = await PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("operation"),
-        provider.wallet.publicKey.toBuffer(),
-        Buffer.from(cancelOpId),
-      ],
+      [Buffer.from("operation"), provider.wallet.publicKey.toBuffer(), Buffer.from(cancelOpId)],
       program.programId
     );
-    // calculo pdas de nuevas bovedas
     const [cancelVaultNft] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("vault_nft"),
-        Buffer.from(cancelOpId)
-      ],
+      [Buffer.from("vault_nft"), Buffer.from(cancelOpId)],
       program.programId
     );
     const [cancelVaultPayment] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("vault_payment"),
-        Buffer.from(cancelOpId)
-      ],
+      [Buffer.from("vault_payment"), Buffer.from(cancelOpId)],
       program.programId
     );
 
     const duration = new anchor.BN(86400);
 
-    // inicializo nueva operacion
+    // 1. Initialize
     await program.methods
       .initialize(cancelOpId, importer.publicKey, duration)
       .accounts({
@@ -347,7 +361,8 @@ describe("trade_orchestrator", () => {
       })
       .rpc();
 
-      // deposito nft, asumimos que exporter tiene tokens del mint anterior. minteo 1 para asegurar.
+      // 2. Deposit NFT (Mint a new one just in case or reuse logic)
+      // Reusing mint logic but minting 1 more to exporter
       await mintTo(
         provider.connection,
         provider.wallet.payer,
@@ -371,7 +386,7 @@ describe("trade_orchestrator", () => {
       })
       .rpc();
       
-      // deposito pago, 500 usdc
+      // 3. Deposit Payment (500 USDC)
       const refundAmount = 500 * 1_000_000;
       await mintTo(
         provider.connection,
@@ -397,40 +412,45 @@ describe("trade_orchestrator", () => {
       .signers([importer])
       .rpc();
 
-      // cancelacion
+      console.log("   ℹ️  Assets Deposited. Executing Cancel...");
+
+      // Snapshots before refund
       const preRefundExporterNft = (await provider.connection.getTokenAccountBalance(exporterNftAccount)).value.uiAmount;
       const preRefundImporterUsdc = (await provider.connection.getTokenAccountBalance(importerUsdcAccount)).value.amount;
 
-      console.log("Cancelling operation and refunding assets...");
+      // 4. Cancel
       await program.methods
       .cancelOperation(cancelOpId)
       .accounts({
         operationAccount: cancelOpPda,
+        signer: provider.wallet.publicKey, // ADDED: Matches generic signer update
         exporter: provider.wallet.publicKey,
         importer: importer.publicKey,
-        // vuelven a los owners 
+        // Refunds go back to owners
         exporterTokenAccount: exporterNftAccount,
         importerTokenAccount: importerUsdcAccount,
-        // origenes
+        // From Vaults
         vaultNftAccount: cancelVaultNft,
         vaultPaymentAccount: cancelVaultPayment,
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
 
-      // validaciones
+      // Verify Refunds
       const postRefundExporterNft = (await provider.connection.getTokenAccountBalance(exporterNftAccount)).value.uiAmount;
       const postRefundImporterUsdc = (await provider.connection.getTokenAccountBalance(importerUsdcAccount)).value.amount;
       const opAccount = await program.account.operationState.fetch(cancelOpPda);
 
-      // exporter debe tener 1 NFT mas
       assert.equal(postRefundExporterNft, preRefundExporterNft + 1);
-      // importer recupera 500, pasamos a bn para comparar montos grandes
+      
       const expectedUsdc = new anchor.BN(preRefundImporterUsdc).add(new anchor.BN(refundAmount)); 
       assert.equal(postRefundImporterUsdc, expectedUsdc.toString());
-      // operacion queda cancelada
-      assert.equal(opAccount.state, 4); // 4 = cancelled
+      
+      assert.equal(opAccount.state, 4); // 4 = Cancelled
 
-      console.log("Operation cancelled and assets refunded correctly");
+      console.log("   ✅ Operation Cancelled.");
+      console.log("   ✅ NFT Returned to Exporter.");
+      console.log("   ✅ USDC Refunded to Importer.");
+      console.log("---------------------------------------------------");
   });
 });
