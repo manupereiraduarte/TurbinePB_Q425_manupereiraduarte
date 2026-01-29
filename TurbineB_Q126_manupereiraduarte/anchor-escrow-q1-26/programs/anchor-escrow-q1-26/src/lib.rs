@@ -20,7 +20,7 @@ pub mod anchor_escrow_q1_26 {
         ctx.accounts.refund_and_close_vault()
     }
 
-    pub fn take(ctx: Context<Take>) -> Result<()> {
+    pub fn take(ctx: Context<Take>, seed: u64) -> Result<()> {
         ctx.accounts.deposit()?;
         ctx.accounts.withdraw_and_close_vault()
     }

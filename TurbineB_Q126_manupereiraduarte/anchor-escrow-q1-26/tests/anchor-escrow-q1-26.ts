@@ -142,7 +142,7 @@ describe("anchor_escrow_q1_26", () => {
 
     // Take
     await program.methods
-      .take()
+      .take(seed2)
       .accountsStrict({
         taker: taker.publicKey,
         maker: maker,
