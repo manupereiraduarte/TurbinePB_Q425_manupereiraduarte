@@ -62,8 +62,10 @@ pub struct Unstake<'info> {
 
 impl<'info> Unstake<'info> {
     pub fn unstake(&mut self) -> Result<()> {
-        let time_elapsed = (Clock::get()?.unix_timestamp - self.stake_account.staked_at / 86400) as u32;
-
+        let now = Clock::get()?.unix_timestamp;
+        let staked_at = self.stake_account.staked_at;
+        let time_elapsed = ((now - staked_at) / 86400) as u32;
+        
         require!(
             time_elapsed > self.config.freeze_period,
             StakeError::FreezePeriodNotPassed
