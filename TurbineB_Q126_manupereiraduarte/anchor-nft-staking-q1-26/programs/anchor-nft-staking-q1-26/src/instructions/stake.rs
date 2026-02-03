@@ -46,6 +46,7 @@ pub struct Stake<'info> {
     pub config: Account<'info, StakeConfig>,
 
     #[account(
+        mut,
         seeds = [b"user".as_ref(), user.key().as_ref()],
         bump = user_account.bump,
     )]
@@ -83,6 +84,7 @@ impl<'info> Stake<'info> {
             bump: bumps.stake_account,
 
         });
+        self.user_account.amount_staked += 1;
         Ok(())
     }
 }
