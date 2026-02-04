@@ -96,7 +96,7 @@ impl<'info> Unstake<'info> {
             .asset(&self.asset.to_account_info())
             .collection(Some(&self.collection.to_account_info()))
             .payer(&self.user.to_account_info())
-            .authority(Some(&self.stake_account.to_account_info()))
+            .authority(None)
             .system_program(&self.system_program.to_account_info())
             .plugin_type(PluginType::FreezeDelegate)
             .invoke_signed(signer_seeds)?;
