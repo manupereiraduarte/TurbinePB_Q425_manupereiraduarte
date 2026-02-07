@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{error::MPLXCoreError, program::AnchorMplxcoreQ425, state::WhitelistedCreators};
+use crate::{error::MPLXCoreError, program::AnchorMplxcoreQ126, state::WhitelistedCreators};
 
 #[derive(Accounts)] 
 pub struct WhitelistCreator<'info> {
@@ -18,7 +18,7 @@ pub struct WhitelistCreator<'info> {
     pub whitelisted_creators: Account<'info, WhitelistedCreators>,
     pub system_program: Program<'info, System>,
     #[account(constraint = this_program.programdata_address()? == Some(program_data.key()))]
-    pub this_program: Program<'info, AnchorMplxcoreQ425>,
+    pub this_program: Program<'info, AnchorMplxcoreQ126>,
     // Making sure only the program update authority can add creators to the array
     #[account(constraint = program_data.upgrade_authority_address == Some(payer.key()) @ MPLXCoreError::NotAuthorized)]
     pub program_data: Account<'info, ProgramData>,

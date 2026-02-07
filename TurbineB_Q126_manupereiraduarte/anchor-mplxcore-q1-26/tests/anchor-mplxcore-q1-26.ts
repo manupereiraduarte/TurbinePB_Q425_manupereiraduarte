@@ -304,4 +304,54 @@ describe("anchor-mplxcore-q1-26", () => {
       }
     });
   });
+
+  describe("UpdateNft", () => {
+    it("Updates an NFT's name and URI", async () => {
+      const args = {
+        newName: "Updated Test NFT",
+        newUri: "https://gateway.irys.xyz/updatedhashhere",
+      };
+
+      await program.methods
+        .updateNft(args)
+        .accountsStrict({
+          authority: creator.publicKey,
+          asset: asset.publicKey,
+          collection: collection.publicKey,
+          collectionAuthority: collectionAuthorityPda,
+          coreProgram: MPL_CORE_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc();
+
+      // Verificar que el NFT se actualizó correctamente
+      // Nota: Para verificar los cambios necesitarías fetchear el asset desde MPL Core
+    });
+
+    it("Fails to update with unauthorized authority", async () => {
+      const args = {
+        newName: "Unauthorized Update",
+        newUri: "https://gateway.irys.xyz/unauthorizedhash",
+      };
+
+      try {
+        await program.methods
+          .updateNft(args)
+          .accountsStrict({
+            authority: unauthorizedAuthority.publicKey,
+            asset: asset.publicKey,
+            collection: collection.publicKey,
+            collectionAuthority: collectionAuthorityPda,
+            coreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([unauthorizedAuthority])
+          .rpc();
+        assert.fail("Should have failed with unauthorized authority");
+      } catch (err) {
+        assert.equal(err.error.errorCode.code, "NotAuthorized", "Expected NotAuthorized error");
+      }
+    });
+  });
 });

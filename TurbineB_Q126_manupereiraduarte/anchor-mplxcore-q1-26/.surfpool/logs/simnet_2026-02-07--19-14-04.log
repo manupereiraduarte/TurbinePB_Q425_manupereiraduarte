@@ -1,0 +1,14 @@
+[2026-02-07--19-14-05 INFO actix_server::builder] starting 5 workers
+[2026-02-07--19-14-05 INFO actix_server::server] Tokio runtime found; starting in existing Tokio runtime
+[2026-02-07--19-14-05 INFO actix_server::server] starting service: "actix-web-service-127.0.0.1:18488", workers: 5, listening on: 127.0.0.1:18488
+[2026-02-07--19-14-06 INFO parity_ws] Listening for new connections on 127.0.0.1:8900.
+[2026-02-07--19-14-08 INFO txtx::svm::deploy_program] Program Created - Program HS2T4CFfcCRowQTYEFHNRtSqbP6tAGvaNjLwGE2zfik6 has been deployed
+[2026-02-07--19-14-35 INFO parity_ws::io] Accepted a new tcp connection from 127.0.0.1:52648.
+[2026-02-07--19-15-19 INFO parity_ws::io] Accepted a new tcp connection from 127.0.0.1:34586.
+[2026-02-07--19-23-06 INFO parity_ws::io] Accepted a new tcp connection from 127.0.0.1:36960.
+[2026-02-07--19-33-22 INFO actix_server::accept] accept thread stopped
+[2026-02-07--19-33-22 INFO actix_server::worker] shutting down idle worker
+[2026-02-07--19-33-22 INFO actix_server::worker] shutting down idle worker
+[2026-02-07--19-33-22 INFO actix_server::worker] shutting down idle worker
+[2026-02-07--19-33-22 INFO actix_server::worker] shutting down idle worker
+[2026-02-07--19-33-22 INFO actix_server::worker] shutting down idle worker
