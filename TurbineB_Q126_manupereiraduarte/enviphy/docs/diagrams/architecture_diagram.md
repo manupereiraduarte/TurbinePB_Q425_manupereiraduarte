@@ -1,5 +1,5 @@
 # Architecture Diagram
-![alt text](<WhatsApp Image 2026-02-06 at 11.30.54.jpeg>)
+![alt text](<../img/WhatsApp Image 2026-02-06 at 11.30.54.jpeg>)
 ## Architecture Layers
 
 The system is organized into four main layers:
