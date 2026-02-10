@@ -5,11 +5,11 @@ import { Transaction, Ed25519Program, Keypair, PublicKey, SystemProgram, LAMPORT
 import { randomBytes } from "crypto";
 import { BN } from "bn.js";
 
-describe("dice-game", () => {
+describe("anchor_dice_game_q1_26", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.DiceGame as Program<AnchorDiceGameQ126>;
+  const program = anchor.workspace.AnchorDiceGameQ126 as Program<AnchorDiceGameQ126>;
 
   // const MSG = Uint8Array.from(Buffer.from("13J", "hex"));
   let house = new Keypair();
@@ -21,8 +21,14 @@ describe("dice-game", () => {
 
   it("Airdrop", async () => {
     await Promise.all([house, player].map(async (k) => {
-      return await anchor.getProvider().connection.requestAirdrop(k.publicKey, 1000 * anchor.web3.LAMPORTS_PER_SOL);
+      const sig = await anchor.getProvider().connection.requestAirdrop(
+        k.publicKey, 
+        1000 * anchor.web3.LAMPORTS_PER_SOL
+      );
+      await anchor.getProvider().connection.confirmTransaction(sig, "confirmed");
     }));
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
   });
 
   it("Initialize", async () => {

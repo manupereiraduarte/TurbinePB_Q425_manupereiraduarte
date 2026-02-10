@@ -451,16 +451,14 @@ checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 
 [[package]]
 name = "blake3"
-version = "1.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2468ef7d57b3fb7e16b576e8377cdbde2320c60e1491e961d11da40fc4f02a2d"
+version = "1.5.5"
+source = "git+https://github.com/BLAKE3-team/BLAKE3?tag=1.5.5#81f772a4cd70dc0325047a6a737d2f6f4b92180e"
 dependencies = [
  "arrayref",
  "arrayvec",
  "cc",
  "cfg-if",
  "constant_time_eq",
- "cpufeatures",
  "digest 0.10.7",
 ]
 
@@ -649,9 +647,8 @@ dependencies = [
 
 [[package]]
 name = "constant_time_eq"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
+version = "0.3.1"
+source = "git+https://github.com/cesarb/constant_time_eq?tag=0.3.1#bea93a336b65dee32f1ed871ea1eecdf47977bb2"
 
 [[package]]
 name = "cpufeatures"

@@ -17,3 +17,10 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/**/*.ts\""
+
+[test.validator]
+ledger = ".anchor/test-ledger"
+
+[[test.validator.account]]
+address = "Ed25519SigVerify111111111111111111111111111"
+filename = "test-fixtures/Ed25519SigVerify111111111111111111111111111.json"
