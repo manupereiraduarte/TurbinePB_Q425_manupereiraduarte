@@ -15,13 +15,13 @@ pub struct CastVote<'info> {
     #[account(
         init,
         payer = voter,
-        space = 8 + 32 + 1 + 8 + 1, // discriminator + authority + vote_type + credits + bump
+        space = 8 + 32 + 1 + 8 + 1,
         seeds = [b"vote", voter.key().as_ref(), proposal.key().as_ref()],
         bump
     )]
     pub vote_account: Account<'info, Vote>,
 
-    pub creator_token_account: Account<'info, anchor_spl::token::TokenAccount>,
+    pub creator_token_account: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
 }
@@ -31,18 +31,18 @@ pub fn cast_vote(ctx: Context<CastVote>, vote_type: u8) -> Result<()> {
     
     let vote_account = &mut ctx.accounts.vote_account;
     let proposal_account = &mut ctx.accounts.proposal;
-    let voting_credits = (ctx.accounts.creator_token_account.amount as f64).sqrt() as u64;
+    
 
-    vote_account.set_inner(
-        Vote {
-            authority: ctx.accounts.voter.key(),
-            vote_type,
-            vote_credits: voting_credits,
-            bump: ctx.bumps.vote_account,
-        }
-    );
+    let token_decimals = 9; 
+    let token_amount = ctx.accounts.creator_token_account.amount / 10u64.pow(token_decimals);
+    
+    let voting_credits = (token_amount as f64).sqrt() as u64;
 
-    // Actualizar contadores de la propuesta
+    vote_account.authority = ctx.accounts.voter.key();
+    vote_account.vote_type = vote_type;
+    vote_account.vote_credits = voting_credits;
+    vote_account.bump = ctx.bumps.vote_account;
+
     if vote_type == 1 {
         proposal_account.yes_vote_count += voting_credits;
     } else {
