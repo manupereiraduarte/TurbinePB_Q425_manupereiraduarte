@@ -65,9 +65,9 @@ pub struct Deposit<'info> {
 impl<'info> Deposit<'info> {
     pub fn deposit(
         &mut self,
-        amount: u64, // Amount of LP tokens that the user wants to "claim"
-        max_x: u64,  // Maximum amount of token X that the user is willing to deposit
-        max_y: u64,  // Maximum amount of token Y that the user is willing to deposit
+        amount: u64,
+        max_x: u64,
+        max_y: u64,
     ) -> Result<()> {
         require!(self.config.locked == false, AmmError::PoolLocked);
         require!(amount != 0, AmmError::InvalidAmount);
@@ -78,6 +78,7 @@ impl<'info> Deposit<'info> {
         {
             true => (max_x, max_y),
             false => {
+                
                 let amounts = ConstantProduct::xy_deposit_amounts_from_l(
                     self.vault_x.amount,
                     self.vault_y.amount,
@@ -85,7 +86,7 @@ impl<'info> Deposit<'info> {
                     amount,
                     6,
                 )
-                .unwrap();
+                .map_err(|_| AmmError::InvalidAmount)?; 
                 (amounts.x, amounts.y)
             }
         };
