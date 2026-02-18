@@ -14,6 +14,7 @@ pub struct AgreementConfig {
     pub amount: u64,
     pub protocol_fee: u64,
     pub fee_recipient: Pubkey,
+    pub created_at: i64,
     pub bump: u8,
     pub vault_bump: u8,
 }
