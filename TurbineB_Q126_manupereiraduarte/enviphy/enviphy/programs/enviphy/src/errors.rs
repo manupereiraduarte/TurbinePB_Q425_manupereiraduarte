@@ -25,6 +25,9 @@ pub enum ErrorCode {
     #[msg("Only the payer can deposit funds")]
     UnauthorizedPayer,
 
+    #[msg("Invalid fee recipient")]
+    InvalidFeeRecipient,
+
     // Telemetry errors
     #[msg("Agreement is not funded yet")]
     NotFunded,
