@@ -5,6 +5,8 @@ use crate::errors::ErrorCode;
 
 #[derive(Accounts)]
 pub struct ProcessTelemetry<'info> {
+
+    #[account(mut)]
     pub provider: Signer<'info>,
 
     #[account(
@@ -19,6 +21,7 @@ pub struct ProcessTelemetry<'info> {
     pub config: Account<'info, AgreementConfig>,
 
     #[account(
+        mut,
         seeds = [
             b"state",
             config.key().as_ref(),
@@ -47,12 +50,17 @@ pub fn handler(
     require!(timestamp > agreement_state.last_heartbeat, ErrorCode::InvalidTimestamp);
 
     // 2. Lógica de negocio: Verificación de Brechas
-    let time_since_last_heartbeat = timestamp - agreement_state.last_heartbeat;
+    let time_since_last_heartbeat = clock.unix_timestamp - agreement_state.last_heartbeat;
     
     if time_since_last_heartbeat > config.grace_period {
         // Brecha por conectividad
         agreement_state.status = AgreementStatus::Breached;
         agreement_state.breach_reason = BreachReason::ConnectivityLoss;
+
+        agreement_state.last_heartbeat = timestamp;
+        agreement_state.last_temperature = temperature;
+        agreement_state.last_humidity = humidity;
+        agreement_state.measurement_count += 1;
 
         emit!(ConnectivityBreach {
             config: config.key(),
@@ -60,31 +68,42 @@ pub fn handler(
             current_time: clock.unix_timestamp,
             grace_period: config.grace_period,
         });
-    } else {
+
+        emit!(TelemetryProcessed {
+            config: config.key(),
+            temperature,
+            humidity,
+            timestamp,
+            status: agreement_state.status.clone(),
+            measurement_count: agreement_state.measurement_count,
+        });
+        
+        return Ok(());
+    }
         // Si la conexión es buena, verificamos umbrales
-        let out_of_range = temperature < config.temp_min
-            || temperature > config.temp_max
-            || humidity < config.humidity_min
-            || humidity > config.humidity_max;
+    let out_of_range = 
+        temperature < config.temp_min ||
+        temperature > config.temp_max ||
+        humidity < config.humidity_min ||
+        humidity > config.humidity_max;
 
-        if out_of_range {
-            agreement_state.status = AgreementStatus::Breached;
-            agreement_state.breach_reason = BreachReason::ThresholdViolation;
-
-            emit!(ThresholdBreach {
-                config: config.key(),
-                temperature,
-                humidity,
-                temp_min: config.temp_min,
-                temp_max: config.temp_max,
-                humidity_min: config.humidity_min,
-                humidity_max: config.humidity_max,
-            });
-        }
+    if out_of_range {
+        agreement_state.status = AgreementStatus::Breached;
+        agreement_state.breach_reason = BreachReason::ThresholdViolation;
+        
+        emit!(ThresholdBreach {
+            config: config.key(),
+            temperature,
+            humidity,
+            temp_min: config.temp_min,
+            temp_max: config.temp_max,
+            humidity_min: config.humidity_min,
+            humidity_max: config.humidity_max,
+        });
     }
 
-    // 3. Actualización de estado ÚNICA (Common State Update)
-    agreement_state.last_temperature = temperature; 
+    // 7. Actualizar estado (SIEMPRE, incluso si hubo breach)
+    agreement_state.last_temperature = temperature;
     agreement_state.last_humidity = humidity;
     agreement_state.last_heartbeat = timestamp;
     agreement_state.measurement_count += 1;
