@@ -10,3 +10,4 @@ before(async () => {
 import "./instructions/initialize_agreement.test";
 import "./instructions/deposit.test";
 import "./instructions/process_telemetry.test";
+import "./instructions/resolve_agreement.test";

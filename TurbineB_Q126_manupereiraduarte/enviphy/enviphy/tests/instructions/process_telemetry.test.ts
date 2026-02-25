@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { program, provider, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs, airdrop } from "../setup";
 import { createAgreement, createAndFundAgreement } from "../fixtures";
 
-describe("Step 4: process_telemetry", () => {
+describe("Process_telemetry", () => {
 
   it("Accepts valid telemetry within thresholds", async () => {
     const { config, agreementState } = await createAndFundAgreement();
@@ -225,7 +225,7 @@ describe("Step 4: process_telemetry", () => {
     const stateAfterBreach = await program.account.agreementState.fetch(agreementState, "confirmed");
     expect(stateAfterBreach.status).to.deep.equal({ breached: {} });
 
-    // Intentar enviar más telemetría
+    // more telemetry after breach
     try {
       await program.methods
         .processTelemetry(
@@ -288,7 +288,7 @@ describe("Step 4: process_telemetry", () => {
           new anchor.BN(stateBefore.lastHeartbeat.toNumber() + 10)
         )
         .accounts({
-          provider: payer.publicKey, // ← no es el provider
+          provider: payer.publicKey, // non-provider tries to submit telemetry
           config,
           agreementState,
           clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
@@ -304,7 +304,7 @@ describe("Step 4: process_telemetry", () => {
   });
 
   it("Fails when agreement is not funded", async () => {
-    const { config, agreementState } = await createAgreement(); // sin fondear
+    const { config, agreementState } = await createAgreement(); // no fund
     const stateBefore = await program.account.agreementState.fetch(agreementState, "confirmed");
 
     try {

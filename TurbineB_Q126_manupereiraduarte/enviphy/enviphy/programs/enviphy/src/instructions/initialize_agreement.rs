@@ -49,7 +49,7 @@ pub struct InitializeAgreement<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(
+pub fn initialize_agreement(
     ctx: Context<InitializeAgreement>,
     temp_min: f32,
     temp_max: f32,

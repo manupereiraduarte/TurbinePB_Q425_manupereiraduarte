@@ -33,7 +33,7 @@ pub struct ProcessTelemetry<'info> {
     pub clock: Sysvar<'info, Clock>,
 }
 
-pub fn handler(
+pub fn process_telemetry(
     ctx: Context<ProcessTelemetry>,
     temperature: f32,
     humidity: f32,

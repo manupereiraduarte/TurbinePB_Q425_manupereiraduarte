@@ -47,4 +47,8 @@ pub enum ErrorCode {
 
     #[msg("Agreement has already been resolved")]
     AlreadyResolved,
+
+    #[msg("Invalid recipient for resolution")]
+    InvalidRecipient,
+
 }

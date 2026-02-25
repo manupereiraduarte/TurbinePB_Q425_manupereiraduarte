@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { program, provider, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs, airdrop } from "../setup";
 import { createAgreement } from "../fixtures";
 
-describe("Step 3: deposit_funds", () => {
+describe("Deposit_funds", () => {
 
   it("Payer deposits funds correctly", async () => {
     const { config, agreementState, vault } = await createAgreement();
@@ -38,7 +38,7 @@ describe("Step 3: deposit_funds", () => {
   it("Fails when trying to deposit twice", async () => {
     const { config, agreementState, vault } = await createAgreement();
 
-    // Primer deposit — debe pasar
+    // first deposit
     await program.methods
       .depositFunds()
       .accounts({
@@ -54,7 +54,7 @@ describe("Step 3: deposit_funds", () => {
       .rpc({ commitment: "confirmed" });
 
     try {
-      // Segundo deposit — debe fallar
+      // Second deposit, must fail
       await program.methods
         .depositFunds()
         .accounts({
@@ -83,7 +83,7 @@ describe("Step 3: deposit_funds", () => {
       await program.methods
         .depositFunds()
         .accounts({
-          payer: providerKp.publicKey, // ← Provider intenta depositar
+          payer: providerKp.publicKey, // provider tries to deposit
           config,
           agreementState,
           vault,

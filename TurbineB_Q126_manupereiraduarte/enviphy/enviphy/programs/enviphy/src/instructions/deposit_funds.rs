@@ -48,7 +48,7 @@ pub struct DepositFunds<'info> {
     pub clock: Sysvar<'info, Clock>,
 }
 
-pub fn handler(ctx: Context<DepositFunds>) -> Result<()> {
+pub fn deposit_funds(ctx: Context<DepositFunds>) -> Result<()> {
     let config = &ctx.accounts.config;
     let agreement_state = &mut ctx.accounts.agreement_state;
     let clock = &ctx.accounts.clock;

@@ -24,7 +24,7 @@ pub mod enviphy {
         provider: Pubkey,
         created_at: i64,
     ) -> Result<()> {
-        initialize_agreement::handler(
+        initialize_agreement::initialize_agreement(
             ctx, 
             temp_min, 
             temp_max, 
@@ -40,7 +40,7 @@ pub mod enviphy {
     }
 
     pub fn deposit_funds(ctx: Context<DepositFunds>) -> Result<()> {
-        deposit_funds::handler(ctx)
+        deposit_funds::deposit_funds(ctx)
     }
 
     pub fn process_telemetry(
@@ -49,11 +49,11 @@ pub mod enviphy {
         humidity: f32,
         timestamp: i64,
     ) -> Result<()> {
-        process_telemetry::handler(ctx, temperature, humidity, timestamp)
+        process_telemetry::process_telemetry(ctx, temperature, humidity, timestamp)
     }
 
     pub fn resolve_agreement(ctx: Context<ResolveAgreement>) -> Result<()> {
-        resolve_agreement::handler(ctx)
+        resolve_agreement::resolve_agreement(ctx)
     }
 
 }

@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { expect } from "chai";
 import { program, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs } from "../setup";
 
-describe("Step 2: initialize_agreement", () => {
+describe("Initialize_agreement", () => {
 
   it("Payer initializes agreement correctly", async () => {
     const createdAt = getTimestamp();
@@ -149,7 +149,7 @@ describe("Step 2: initialize_agreement", () => {
     try {
       await program.methods
         .initializeAgreement(
-          10.0, 5.0, // min > max ← inválido
+          10.0, 5.0, // min > max 
           BASE_PARAMS.humidityMin,
           BASE_PARAMS.humidityMax,
           BASE_PARAMS.duration,
@@ -189,7 +189,7 @@ describe("Step 2: initialize_agreement", () => {
         .initializeAgreement(
           BASE_PARAMS.tempMin,
           BASE_PARAMS.tempMax,
-          80.0, 40.0, // min > max ← inválido
+          80.0, 40.0, // min > max 
           BASE_PARAMS.duration,
           BASE_PARAMS.gracePeriod,
           BASE_PARAMS.amount,
@@ -229,7 +229,7 @@ describe("Step 2: initialize_agreement", () => {
           BASE_PARAMS.tempMax,
           BASE_PARAMS.humidityMin,
           BASE_PARAMS.humidityMax,
-          new anchor.BN(0), // ← inválido
+          new anchor.BN(0), // invalid
           BASE_PARAMS.gracePeriod,
           BASE_PARAMS.amount,
           payer.publicKey,
@@ -270,7 +270,7 @@ describe("Step 2: initialize_agreement", () => {
           BASE_PARAMS.humidityMax,
           BASE_PARAMS.duration,
           BASE_PARAMS.gracePeriod,
-          new anchor.BN(0), // ← inválido
+          new anchor.BN(0), // ← invalid
           payer.publicKey,
           providerKp.publicKey,
           createdAt,
@@ -308,7 +308,7 @@ describe("Step 2: initialize_agreement", () => {
           BASE_PARAMS.humidityMin,
           BASE_PARAMS.humidityMax,
           BASE_PARAMS.duration,
-          new anchor.BN(0), // ← inválido
+          new anchor.BN(0), // ← invalid
           BASE_PARAMS.amount,
           payer.publicKey,
           providerKp.publicKey,
