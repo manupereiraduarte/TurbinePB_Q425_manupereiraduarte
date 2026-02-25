@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { program, provider, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs, airdrop } from "../setup";
 import { createAgreement } from "../fixtures";
 
-describe("Deposit_funds", () => {
+describe("===== Deposit_funds =====", () => {
 
   it("Payer deposits funds correctly", async () => {
     const { config, agreementState, vault } = await createAgreement();
@@ -30,6 +30,7 @@ describe("Deposit_funds", () => {
     const vaultBalance = await provider.connection.getBalance(vault);
     expect(vaultBalance.toString()).to.equal(BASE_PARAMS.amount.toString());
 
+    console.log()
     console.log("✅ Payer deposited funds correctly");
     console.log("   Vault balance:", vaultBalance);
     console.log("   Start time:", stateAccount.startTime.toString());
@@ -72,6 +73,7 @@ describe("Deposit_funds", () => {
       expect.fail("Should have thrown AlreadyFunded");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected double deposit");
     }
   });
@@ -97,6 +99,7 @@ describe("Deposit_funds", () => {
       expect.fail("Should have thrown UnauthorizedPayer");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected non-payer deposit");
     }
   });
@@ -162,7 +165,9 @@ describe("Deposit_funds", () => {
     const feeReceived = feeRecipientBalanceAfter - feeRecipientBalanceBefore;
     expect(feeReceived.toString()).to.equal(configAccount.protocolFee.toString());
 
+    console.log()
     console.log("✅ Correct amounts transferred");
+    console.log("   Agreement amount:", configAccount.amount.toString(), "lamports");
     console.log("   Vault received:", vaultBalance, "lamports");
     console.log("   Fee received:", feeReceived, "lamports");
   });
@@ -201,6 +206,7 @@ describe("Deposit_funds", () => {
     expect(startTime).to.be.lessThan(4102444800);     // 1 Jan 2100
     expect(stateAccount.isFunded).to.equal(true);
 
+    console.log()
     console.log("✅ Timestamps set correctly");
     console.log("   Start time:", startTime);
     console.log("   Last heartbeat:", lastHeartbeat);
@@ -226,6 +232,7 @@ describe("Deposit_funds", () => {
       .rpc({ commitment: "confirmed" });
 
     expect(tx).to.be.a("string");
+    console.log()
     console.log("✅ FundsDeposited event emitted");
   });
 

@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { expect } from "chai";
 import { program, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs } from "../setup";
 
-describe("Initialize_agreement", () => {
+describe("===== Initialize_agreement =====", () => {
 
   it("Payer initializes agreement correctly", async () => {
     const createdAt = getTimestamp();
@@ -51,8 +51,13 @@ describe("Initialize_agreement", () => {
     const stateAccount = await program.account.agreementState.fetch(agreementState, "confirmed");
     expect(stateAccount.isFunded).to.equal(false);
     expect(stateAccount.measurementCount.toString()).to.equal("0");
-
+    
+    console.log()
     console.log("✅ Payer initialized agreement correctly");
+    console.log("   Temp range:", configAccount.tempMin, "C° -", configAccount.tempMax, "C°" );
+    console.log("   Humidity range:", configAccount.humidityMin, "% -", configAccount.humidityMax, "%");
+    console.log("   duration:", configAccount.duration.toString(), "seconds");
+    console.log("   amount:", configAccount.amount.toString(), "lamports");
   });
 
   it("Provider initializes agreement correctly", async () => {
@@ -90,6 +95,7 @@ describe("Initialize_agreement", () => {
     expect(configAccount.payer.toString()).to.equal(payer.publicKey.toString());
     expect(configAccount.provider.toString()).to.equal(providerKp.publicKey.toString());
 
+    console.log()
     console.log("✅ Provider initialized agreement correctly");
   });
 
@@ -134,8 +140,9 @@ describe("Initialize_agreement", () => {
       expect(configAccount.provider.toString()).to.equal(providerKp.publicKey.toString());
       expect(configAccount.createdAt.toString()).to.equal(createdAt.toString());
     }
+    console.log()
+    console.log("✅ Same provider initialized 3 agreements");
 
-    console.log("✅ Same provider can have multiple agreements");
   });
 
   it("Fails with invalid temp range", async () => {
@@ -172,7 +179,9 @@ describe("Initialize_agreement", () => {
       expect.fail("Should have thrown an error");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected invalid temp range");
+      console.log("   Temp range:", 10.0, "C° -", 5.0, "C°");
     }
   });
 
@@ -210,7 +219,9 @@ describe("Initialize_agreement", () => {
       expect.fail("Should have thrown an error");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected invalid humidity range");
+      console.log("   Humidity range:", 80.0, "% -", 40.0 , "%");
     }
   });
 
@@ -249,6 +260,7 @@ describe("Initialize_agreement", () => {
       expect.fail("Should have thrown an error");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected zero duration");
     }
   });
@@ -288,6 +300,7 @@ describe("Initialize_agreement", () => {
       expect.fail("Should have thrown an error");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected zero amount");
     }
   });
@@ -327,6 +340,7 @@ describe("Initialize_agreement", () => {
       expect.fail("Should have thrown an error");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected zero grace period");
     }
   });

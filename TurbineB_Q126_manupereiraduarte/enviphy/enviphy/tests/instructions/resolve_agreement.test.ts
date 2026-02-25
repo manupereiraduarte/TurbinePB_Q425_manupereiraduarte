@@ -11,7 +11,7 @@ const createAndFundShortAgreement = async () => {
   });
 };
 
-describe("Step 5: resolve_agreement", () => {
+describe("===== Resolve_agreement =====", () => {
 
   it("Pays provider on successful completion", async () => {
     const { config, agreementState, vault } = await createAndFundShortAgreement();
@@ -64,8 +64,9 @@ describe("Step 5: resolve_agreement", () => {
     const received = providerBalanceAfter - providerBalanceBefore;
     expect(received.toString()).to.equal(configAccount.amount.toString());
 
+    console.log()
     console.log("✅ Provider received payout on success");
-    console.log("   Amount:", received);
+    console.log("   Amount:", received, "lamports");
   });
 
   it("Refunds payer on threshold breach", async () => {
@@ -119,7 +120,9 @@ describe("Step 5: resolve_agreement", () => {
     const balanceDiff = payerBalanceAfter - payerBalanceBefore;
     expect(balanceDiff).to.be.greaterThan(configAccount.amount.toNumber() * 0.99);
 
+    console.log()
     console.log("✅ Payer received refund on breach");
+    console.log("   Refund amount:", balanceDiff, "lamports");
   });
 
   it("Fails if agreement not yet expired", async () => {
@@ -189,6 +192,7 @@ describe("Step 5: resolve_agreement", () => {
       expect.fail("Should have rejected double resolution");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected double resolution");
     }
   });
@@ -221,7 +225,9 @@ describe("Step 5: resolve_agreement", () => {
     const vaultBalanceAfter = await provider.connection.getBalance(vault);
     expect(vaultBalanceAfter).to.equal(0);
 
+    console.log()
     console.log("✅ Vault emptied after resolution");
+    console.log("   Vault balance after resolution:", vaultBalanceAfter, "lamports");
   });
 
 });
