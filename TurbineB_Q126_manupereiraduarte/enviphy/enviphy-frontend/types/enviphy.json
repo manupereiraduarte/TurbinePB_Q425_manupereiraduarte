@@ -1,0 +1,1013 @@
+{
+  "address": "2dF1MZUAvR8uF8YorNKyKg8Dn7nzGqvSkAMF5ZzDfmye",
+  "metadata": {
+    "name": "enviphy",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "deposit_funds",
+      "discriminator": [
+        202,
+        39,
+        52,
+        211,
+        53,
+        20,
+        250,
+        88
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.payer",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.provider",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.created_at",
+                "account": "AgreementConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "agreement_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_recipient",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_agreement",
+      "discriminator": [
+        228,
+        200,
+        63,
+        16,
+        47,
+        146,
+        42,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "payer"
+              },
+              {
+                "kind": "arg",
+                "path": "provider"
+              },
+              {
+                "kind": "arg",
+                "path": "created_at"
+              }
+            ]
+          }
+        },
+        {
+          "name": "agreement_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "temp_min",
+          "type": "f32"
+        },
+        {
+          "name": "temp_max",
+          "type": "f32"
+        },
+        {
+          "name": "humidity_min",
+          "type": "f32"
+        },
+        {
+          "name": "humidity_max",
+          "type": "f32"
+        },
+        {
+          "name": "duration",
+          "type": "i64"
+        },
+        {
+          "name": "grace_period",
+          "type": "i64"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "payer",
+          "type": "pubkey"
+        },
+        {
+          "name": "provider",
+          "type": "pubkey"
+        },
+        {
+          "name": "created_at",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "process_telemetry",
+      "discriminator": [
+        131,
+        220,
+        224,
+        139,
+        122,
+        62,
+        135,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "provider",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.payer",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.provider",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.created_at",
+                "account": "AgreementConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "agreement_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "temperature",
+          "type": "f32"
+        },
+        {
+          "name": "humidity",
+          "type": "f32"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "resolve_agreement",
+      "discriminator": [
+        218,
+        5,
+        231,
+        201,
+        209,
+        12,
+        99,
+        57
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.payer",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.provider",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.created_at",
+                "account": "AgreementConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "agreement_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "clock",
+          "address": "SysvarC1ock11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AgreementConfig",
+      "discriminator": [
+        249,
+        13,
+        102,
+        105,
+        198,
+        33,
+        206,
+        196
+      ]
+    },
+    {
+      "name": "AgreementState",
+      "discriminator": [
+        224,
+        188,
+        190,
+        76,
+        48,
+        53,
+        226,
+        28
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AgreementCreated",
+      "discriminator": [
+        131,
+        148,
+        204,
+        18,
+        83,
+        92,
+        57,
+        18
+      ]
+    },
+    {
+      "name": "AgreementResolved",
+      "discriminator": [
+        199,
+        226,
+        88,
+        104,
+        111,
+        104,
+        191,
+        67
+      ]
+    },
+    {
+      "name": "ConnectivityBreach",
+      "discriminator": [
+        86,
+        52,
+        165,
+        34,
+        80,
+        128,
+        42,
+        94
+      ]
+    },
+    {
+      "name": "FundsDeposited",
+      "discriminator": [
+        157,
+        209,
+        100,
+        95,
+        59,
+        100,
+        3,
+        68
+      ]
+    },
+    {
+      "name": "TelemetryProcessed",
+      "discriminator": [
+        243,
+        90,
+        235,
+        54,
+        146,
+        105,
+        112,
+        39
+      ]
+    },
+    {
+      "name": "ThresholdBreach",
+      "discriminator": [
+        56,
+        124,
+        92,
+        239,
+        131,
+        73,
+        9,
+        178
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidTempRange",
+      "msg": "temp_min must be less than temp_max"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidHumidityRange",
+      "msg": "humidity_min must be less than humidity_max"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidDuration",
+      "msg": "Duration must be greater than zero"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidGracePeriod",
+      "msg": "Grace period must be greater than zero"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAmount",
+      "msg": "Amount must be greater than zero"
+    },
+    {
+      "code": 6005,
+      "name": "AlreadyFunded",
+      "msg": "Agreement is already funded"
+    },
+    {
+      "code": 6006,
+      "name": "UnauthorizedPayer",
+      "msg": "Only the payer can deposit funds"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidFeeRecipient",
+      "msg": "Invalid fee recipient"
+    },
+    {
+      "code": 6008,
+      "name": "NotFunded",
+      "msg": "Agreement is not funded yet"
+    },
+    {
+      "code": 6009,
+      "name": "UnauthorizedProvider",
+      "msg": "Only the provider can submit telemetry"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidTimestamp",
+      "msg": "Timestamp is invalid or older than last heartbeat"
+    },
+    {
+      "code": 6011,
+      "name": "AgreementNotActive",
+      "msg": "Agreement is not active"
+    },
+    {
+      "code": 6012,
+      "name": "AgreementNotExpired",
+      "msg": "Agreement has not yet expired"
+    },
+    {
+      "code": 6013,
+      "name": "AlreadyResolved",
+      "msg": "Agreement has already been resolved"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidRecipient",
+      "msg": "Invalid recipient for resolution"
+    }
+  ],
+  "types": [
+    {
+      "name": "AgreementConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "temp_min",
+            "type": "f32"
+          },
+          {
+            "name": "temp_max",
+            "type": "f32"
+          },
+          {
+            "name": "humidity_min",
+            "type": "f32"
+          },
+          {
+            "name": "humidity_max",
+            "type": "f32"
+          },
+          {
+            "name": "duration",
+            "type": "i64"
+          },
+          {
+            "name": "grace_period",
+            "type": "i64"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "fee_recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgreementCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "provider",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "duration",
+            "type": "i64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgreementResolved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "AgreementStatus"
+              }
+            }
+          },
+          {
+            "name": "resolved_at",
+            "type": "i64"
+          },
+          {
+            "name": "fee_paid_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgreementState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "AgreementStatus"
+              }
+            }
+          },
+          {
+            "name": "breach_reason",
+            "type": {
+              "defined": {
+                "name": "BreachReason"
+              }
+            }
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "last_heartbeat",
+            "type": "i64"
+          },
+          {
+            "name": "last_temperature",
+            "type": "f32"
+          },
+          {
+            "name": "last_humidity",
+            "type": "f32"
+          },
+          {
+            "name": "measurement_count",
+            "type": "u64"
+          },
+          {
+            "name": "resolved_at",
+            "type": "i64"
+          },
+          {
+            "name": "is_funded",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AgreementStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Breached"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Refunded"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BreachReason",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "ThresholdViolation"
+          },
+          {
+            "name": "ConnectivityLoss"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConnectivityBreach",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "last_heartbeat",
+            "type": "i64"
+          },
+          {
+            "name": "current_time",
+            "type": "i64"
+          },
+          {
+            "name": "grace_period",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundsDeposited",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TelemetryProcessed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "temperature",
+            "type": "f32"
+          },
+          {
+            "name": "humidity",
+            "type": "f32"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "AgreementStatus"
+              }
+            }
+          },
+          {
+            "name": "measurement_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ThresholdBreach",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "temperature",
+            "type": "f32"
+          },
+          {
+            "name": "humidity",
+            "type": "f32"
+          },
+          {
+            "name": "temp_min",
+            "type": "f32"
+          },
+          {
+            "name": "temp_max",
+            "type": "f32"
+          },
+          {
+            "name": "humidity_min",
+            "type": "f32"
+          },
+          {
+            "name": "humidity_max",
+            "type": "f32"
+          }
+        ]
+      }
+    }
+  ]
+}
