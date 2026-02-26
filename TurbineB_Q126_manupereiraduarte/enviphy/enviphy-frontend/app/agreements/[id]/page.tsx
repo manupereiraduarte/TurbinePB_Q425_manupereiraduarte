@@ -203,6 +203,9 @@ export default function AgreementDetailPage() {
 
   const status = getStatus(state);
   const isActive = status === "active";
+  const now = Math.floor(Date.now() / 1000);
+  const hasExpired = config && state && 
+    now >= state.startTime.toNumber() + config.duration.toNumber();
   const isFunded = state.isFunded;
   const isPayer = publicKey?.equals(config.payer);
   const isProvider = publicKey?.equals(config.provider);
@@ -296,11 +299,11 @@ export default function AgreementDetailPage() {
               )}
 
               {/* Resolve */}
-              {(isPayer || isProvider) && isFunded && !isActive && (
+              {(isPayer || isProvider) && isFunded && (!isActive || hasExpired) && (
                 <ActionButton onClick={handleResolve} loading={txStatus === "loading"} label="Resolve Agreement" variant="secondary" />
               )}
 
-              {isActive && isFunded && (
+              {isActive && isFunded && !hasExpired && (
                 <p className="text-slate-500 text-xs text-center">Agreement is active and running.</p>
               )}
 
