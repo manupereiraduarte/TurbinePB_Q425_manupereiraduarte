@@ -451,10 +451,6 @@
           "writable": true
         },
         {
-          "name": "fee_recipient",
-          "writable": true
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
@@ -780,10 +776,6 @@
           {
             "name": "resolved_at",
             "type": "i64"
-          },
-          {
-            "name": "fee_paid_by",
-            "type": "pubkey"
           }
         ]
       }
