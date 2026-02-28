@@ -1,12 +1,22 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Enviphy } from "../target/types/enviphy";
+import fs from "fs";
+import os from "os";
 
 export const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
 export const program = anchor.workspace.Enviphy as Program<Enviphy>;
 
-export const payer = anchor.web3.Keypair.generate();
+// Usar la wallet local como payer (ya tiene SOL en devnet)
+const payerKeypair = JSON.parse(
+  fs.readFileSync(`${os.homedir()}/.config/solana/id.json`, "utf-8")
+);
+export const payer = anchor.web3.Keypair.fromSecretKey(
+  Uint8Array.from(payerKeypair)
+);
+
+// Provider sigue siendo random, se fondea en el before
 export const providerKp = anchor.web3.Keypair.generate();
 
 export const BASE_PARAMS = {
@@ -16,7 +26,7 @@ export const BASE_PARAMS = {
   humidityMax: 60.0,
   duration: new anchor.BN(604800),
   gracePeriod: new anchor.BN(86400),
-  amount: new anchor.BN(1_000_000_000),
+  amount: new anchor.BN(100_000_000),
 };
 
 let lastTimestamp = 0;
@@ -58,9 +68,10 @@ export const getPDAs = (
   return { config, agreementState, vault };
 };
 
+// Solo para fondear el providerKp en devnet
 export const airdrop = async (
   pubkey: anchor.web3.PublicKey,
-  amount = 50 * anchor.web3.LAMPORTS_PER_SOL
+  amount = 2 * anchor.web3.LAMPORTS_PER_SOL
 ) => {
   const sig = await provider.connection.requestAirdrop(pubkey, amount);
   await provider.connection.confirmTransaction(sig, "confirmed");

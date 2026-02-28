@@ -2,6 +2,8 @@ import * as anchor from "@coral-xyz/anchor";
 import { expect } from "chai";
 import { program, provider, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs, airdrop } from "../setup";
 import { createAgreement } from "../fixtures";
+import { SystemProgram, Transaction } from "@solana/web3.js";
+
 
 describe("===== Deposit_funds =====", () => {
 
@@ -107,8 +109,34 @@ describe("===== Deposit_funds =====", () => {
   it("Transfers correct amounts to vault and fee recipient", async () => {
     const newPayer = anchor.web3.Keypair.generate();
     const feeRecipientKp = anchor.web3.Keypair.generate();
-    await airdrop(newPayer.publicKey);
-    await airdrop(feeRecipientKp.publicKey);
+    const transferTx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: payer.publicKey,
+          toPubkey: newPayer.publicKey,
+          lamports: 1 * anchor.web3.LAMPORTS_PER_SOL,
+        })
+      );
+
+    const sig = await anchor.web3.sendAndConfirmTransaction(
+      provider.connection,
+      transferTx,
+      [payer],
+      { commitment: "confirmed" }
+    );
+    const transferTx2 = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: payer.publicKey,
+          toPubkey: feeRecipientKp.publicKey,
+          lamports: 1 * anchor.web3.LAMPORTS_PER_SOL,
+        })
+      );
+
+    const sig2 = await anchor.web3.sendAndConfirmTransaction(
+      provider.connection,
+      transferTx2,
+      [payer],
+      { commitment: "confirmed" }
+    );
 
     const createdAt = getTimestamp();
     const { config, agreementState, vault } = getPDAs(

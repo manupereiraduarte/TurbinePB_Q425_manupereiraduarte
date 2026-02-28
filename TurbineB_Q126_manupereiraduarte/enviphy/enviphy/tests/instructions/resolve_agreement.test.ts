@@ -147,6 +147,7 @@ describe("===== Resolve_agreement =====", () => {
       expect.fail("Should have rejected early resolution");
     } catch (err: any) {
       expect(err).to.exist;
+      console.log()
       console.log("✅ Correctly rejected early resolution");
     }
   });
