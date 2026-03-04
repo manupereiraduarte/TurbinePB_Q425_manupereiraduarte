@@ -181,6 +181,34 @@ export default function AgreementDetailPage() {
       setTxStatus("error");
     }
   };
+  const handleClose = async () => {
+    if (!program || !publicKey || !configPda || !statePda || !vaultPda) return;
+    setTxStatus("loading");
+    setTxError("");
+    try {
+      const tx = await program.methods
+        .closeAgreement()
+        .accounts({
+          signer: publicKey,
+          config: configPda,
+          agreementState: statePda,
+          vault: vaultPda,
+          systemProgram: new PublicKey("11111111111111111111111111111111"),
+        } as any)
+        .rpc({ commitment: "confirmed" });
+
+      setTxSig(tx);
+      setTxStatus("success");
+
+      // Redirigir a la lista después de cerrar
+      setTimeout(() => {
+        window.location.href = "/agreements";
+      }, 2000);
+    } catch (e: any) {
+      setTxError(e?.message || "Transaction failed");
+      setTxStatus("error");
+    }
+  };
 
   if (loading) {
     return (
@@ -307,10 +335,14 @@ export default function AgreementDetailPage() {
                 <p className="text-slate-500 text-xs text-center">Agreement is active and running.</p>
               )}
 
-              {(status === "completed" || status === "refunded") && (
-                <p className="text-slate-500 text-xs text-center">This agreement has been resolved.</p>
+              {(status === "completed" || status === "refunded") && (isPayer || isProvider) && (
+              <ActionButton onClick={handleClose} loading={txStatus === "loading"} label="Close Agreement" variant="secondary" />
               )}
-            </div>
+
+              {!isFunded && (isPayer || isProvider) && (
+                <ActionButton onClick={handleClose} loading={txStatus === "loading"} label="Close Agreement" variant="secondary" />
+              )}
+              </div>
 
             {/* TX feedback */}
             {txStatus === "success" && (

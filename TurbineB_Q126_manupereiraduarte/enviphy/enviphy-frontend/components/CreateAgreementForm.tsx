@@ -202,18 +202,20 @@ export const CreateAgreementForm = () => {
               </div>
             )}
 
-            <button
-              onClick={handleSubmit}
-              disabled={isDisabled}
-              className="mt-6 w-full bg-sky-500 hover:bg-sky-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
-            >
-              {status === "loading" ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating...
-                </span>
-              ) : "Create Agreement"}
-            </button>
+            {status !== "success" && (
+              <button
+                onClick={handleSubmit}
+                disabled={isDisabled}
+                className="mt-6 w-full bg-sky-500 hover:bg-sky-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 text-sm"
+              >
+                {status === "loading" ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </span>
+                ) : "Create Agreement"}
+              </button>
+            )}
 
             {status === "success" && (
               <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">

@@ -8,6 +8,109 @@
   },
   "instructions": [
     {
+      "name": "close_agreement",
+      "discriminator": [
+        48,
+        34,
+        42,
+        18,
+        144,
+        209,
+        198,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.payer",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.provider",
+                "account": "AgreementConfig"
+              },
+              {
+                "kind": "account",
+                "path": "config.created_at",
+                "account": "AgreementConfig"
+              }
+            ]
+          }
+        },
+        {
+          "name": "agreement_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "deposit_funds",
       "discriminator": [
         202,
@@ -645,6 +748,16 @@
       "code": 6014,
       "name": "InvalidRecipient",
       "msg": "Invalid recipient for resolution"
+    },
+    {
+      "code": 6015,
+      "name": "UnauthorizedSigner",
+      "msg": "Only payer or provider can close this agreement"
+    },
+    {
+      "code": 6016,
+      "name": "CannotCloseActiveAgreement",
+      "msg": "Agreement must be resolved or unfunded to close"
     }
   ],
   "types": [
