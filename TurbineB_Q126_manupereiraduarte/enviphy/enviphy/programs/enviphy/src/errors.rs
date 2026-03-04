@@ -51,4 +51,10 @@ pub enum ErrorCode {
     #[msg("Invalid recipient for resolution")]
     InvalidRecipient,
 
+    #[msg("Only payer or provider can close this agreement")]
+    UnauthorizedSigner,
+    
+    #[msg("Agreement must be resolved or unfunded to close")]
+    CannotCloseActiveAgreement,
+
 }

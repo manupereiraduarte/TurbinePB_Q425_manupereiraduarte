@@ -56,4 +56,8 @@ pub mod enviphy {
         resolve_agreement::resolve_agreement(ctx)
     }
 
+    pub fn close_agreement(ctx: Context<CloseAgreement>) -> Result<()> {
+        close_agreement::close_agreement(ctx)
+    }
+
 }

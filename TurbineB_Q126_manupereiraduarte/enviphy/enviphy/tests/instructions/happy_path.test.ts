@@ -171,4 +171,38 @@ describe("===== Happy Path: Full Agreement Lifecycle =====", () => {
     console.log("🔗 TX:", `https://explorer.solana.com/tx/${tx}?cluster=devnet`);
   });
 
+  it("Step 5: Close completed agreement", async () => {
+    const payerBalanceBefore = await provider.connection.getBalance(payer.publicKey);
+
+    const tx = await program.methods
+      .closeAgreement()
+      .accounts({
+        signer: payer.publicKey,
+        config,
+        agreementState,
+        vault,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      } as any)
+      .signers([payer])
+      .rpc({ commitment: "confirmed" });
+
+    await provider.connection.confirmTransaction(tx, "confirmed");
+
+    // Verificar que las cuentas fueron cerradas
+    const configInfo = await provider.connection.getAccountInfo(config);
+    const stateInfo = await provider.connection.getAccountInfo(agreementState);
+    const vaultInfo = await provider.connection.getAccountInfo(vault);
+    const payerBalanceAfter = await provider.connection.getBalance(payer.publicKey);
+
+    expect(configInfo).to.be.null;
+    expect(stateInfo).to.be.null;
+    expect(vaultInfo).to.be.null;
+    expect(payerBalanceAfter).to.be.greaterThan(payerBalanceBefore);
+
+    console.log();
+    console.log("✅ Step 5: Agreement closed successfully");
+    console.log("   Rent recovered:", payerBalanceAfter - payerBalanceBefore, "lamports");
+    console.log("🔗 TX:", `https://explorer.solana.com/tx/${tx}?cluster=devnet`);
+  });
+
 });
