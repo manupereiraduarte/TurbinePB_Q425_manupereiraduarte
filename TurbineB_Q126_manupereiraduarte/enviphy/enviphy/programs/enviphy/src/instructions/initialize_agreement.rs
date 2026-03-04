@@ -88,7 +88,7 @@ pub fn initialize_agreement(
     config.grace_period = grace_period;
     config.amount = amount;
     config.protocol_fee = protocol_fee;
-    config.fee_recipient = ctx.accounts.signer.key(); // For simplicity, fee goes to initializer
+    config.fee_recipient = pubkey!("A3C4QJHCEw9BdbyDSYRCSQGJYYYxq7v5yYe4qPHRays6");
     config.created_at = created_at;
     config.bump = ctx.bumps.config;
     config.vault_bump = ctx.bumps.vault;
