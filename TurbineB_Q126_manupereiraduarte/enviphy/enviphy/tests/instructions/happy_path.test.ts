@@ -2,8 +2,10 @@ import * as anchor from "@coral-xyz/anchor";
 import { expect } from "chai";
 import { program, provider, payer, providerKp, BASE_PARAMS, getTimestamp, getPDAs } from "../setup";
 
-// this test suite walks through the full lifecycle of an agreement in a happy path scenario, validating each step along the way. It serves as an end-to-end integration test to ensure all components work together as expected.
-// the other ones focus on individual instructions and edge cases, while this one simulates a real-world flow from initialization to resolution. It also provides a clear narrative of how the system is intended to be used.
+// this test suite walks through the full lifecycle of an agreement in a happy path scenario, validating each step along the way. 
+// It serves as an end-to-end integration test to ensure all components work together as expected.
+// the other ones focus on individual instructions and edge cases, while this one simulates a real-world flow from initialization to resolution. 
+// It also provides a clear narrative of how the system is intended to be used.
 describe("===== Happy Path: Full Agreement Lifecycle =====", () => {
 
   let config: anchor.web3.PublicKey;
