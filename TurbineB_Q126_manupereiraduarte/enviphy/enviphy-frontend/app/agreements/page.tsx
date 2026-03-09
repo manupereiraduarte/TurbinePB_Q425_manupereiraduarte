@@ -6,16 +6,24 @@ import Link from "next/link";
 
 const statusLabel: Record<string, { label: string; color: string }> = {
   active: { label: "Active", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+  expired: { label: "Expired — Ready to Resolve", color: "text-orange-400 bg-orange-500/10 border-orange-500/20" },
   breached: { label: "Breached", color: "text-red-400 bg-red-500/10 border-red-500/20" },
   completed: { label: "Completed", color: "text-sky-400 bg-sky-500/10 border-sky-500/20" },
   refunded: { label: "Refunded", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
 };
 
-const getStatus = (state: any) => {
-  if (state.status.active !== undefined) return "active";
-  if (state.status.breached !== undefined) return "breached";
+const getStatus = (state: any, config: any) => {
   if (state.status.completed !== undefined) return "completed";
   if (state.status.refunded !== undefined) return "refunded";
+  if (state.status.breached !== undefined) return "breached";
+  if (state.status.active !== undefined) {
+    if (state.isFunded) {
+      const now = Math.floor(Date.now() / 1000);
+      const expired = now >= state.startTime.toNumber() + config.duration.toNumber();
+      if (expired) return "expired";
+    }
+    return "active";
+  }
   return "active";
 };
 
@@ -77,7 +85,7 @@ export default function AgreementsPage() {
       ) : (
         <div className="space-y-4">
           {agreements.map((agreement) => {
-            const status = getStatus(agreement.state);
+            const status = getStatus(agreement.state, agreement.config);
             const statusStyle = statusLabel[status];
             const role = agreement.config.payer.equals(publicKey) ? "Payer" : "Provider";
 
